@@ -1,0 +1,45 @@
+# ─────────────────────────────────────────────────────────────────────
+#  Which backdrops to build every day.
+#  You can edit this file right on github.com (pencil icon) — the next
+#  daily run picks up the change. The README follows this order.
+#
+#  Format:   <type>  <id(s)>  =  <name shown in the README>
+#    network   TMDB network ID(s)   (two IDs = blended into one backdrop)
+#    company   TMDB company ID(s)
+#    bingecat  films | tv           (your Bingecat AI lists)
+#
+#  IDs: https://github.com/bramst0ne/prism-wallpapers/blob/main/tmdb_reference_ids.txt
+# ─────────────────────────────────────────────────────────────────────
+
+# Streaming services
+network  213       = Netflix
+network  49 8304   = HBO + HBO Max
+network  2739      = Disney+
+network  2552      = Apple TV+
+network  1024      = Prime Video
+network  453       = Hulu
+network  4330      = Paramount+
+network  3353      = Peacock
+network  1112      = Crunchyroll
+
+# Studios
+company  41077     = A24
+company  10342     = Studio Ghibli
+company  33        = Universal Pictures
+company  174       = Warner Bros. Pictures
+company  2         = Walt Disney Pictures
+company  3         = Pixar
+company  4         = Paramount Pictures
+company  127928    = 20th Century Studios
+company  3172      = Blumhouse Productions
+company  6704      = Illumination
+company  521       = DreamWorks Animation
+company  1632      = Lionsgate
+company  21        = Metro-Goldwyn-Mayer
+company  12        = New Line Cinema
+
+# Bingecat — uses every AI list of that type, "Latest" lists in focus.
+# To pick specific lists instead, add their IDs after films/tv, e.g.
+#   bingecat films aicat_cs_25232324 aicat_cs_2300784 = Recommended Films
+bingecat films     = Recommended Films
+bingecat tv        = Recommended TV
