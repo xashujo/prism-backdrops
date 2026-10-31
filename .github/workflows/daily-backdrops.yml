@@ -1,0 +1,103 @@
+name: Daily backdrops
+
+on:
+  schedule:
+    - cron: "17 5 * * *"   # every day at 05:17 UTC (06:17 UK summer time, 05:17 winter)
+  workflow_dispatch:       # adds a "Run workflow" button on the Actions tab
+    inputs:
+      only:
+        description: "What to rebuild"
+        type: choice
+        options: [everything, bingecat, services]
+        default: everything
+
+permissions:
+  contents: write          # lets this workflow upload the new images to this repo
+
+concurrency:
+  group: daily-backdrops
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      # prism-wallpapers version used (pinned so an upstream change can't break things)
+      PRISM_COMMIT: fc2efd90d710767a5fc6d48688df7fbd08b363f4
+    steps:
+      - name: Get this repo
+        uses: actions/checkout@v5
+
+      - name: Put files in the right place
+        run: |
+          # If backdrops.txt / generator/ were uploaded inside a folder, move them to the top.
+          if [ ! -f generator/build.py ]; then
+            found=$(find . -path ./.git -prune -o -path '*/generator/build.py' -print | head -1)
+            [ -n "$found" ] || { echo "::error::generator/build.py not found anywhere in the repo"; exit 1; }
+            src=$(dirname "$(dirname "$found")")
+            echo "Moving files up from $src"
+            mv "$src/generator" ./generator
+            [ -f backdrops.txt ] || mv "$src/backdrops.txt" ./backdrops.txt
+            top="./$(echo "${src#./}" | cut -d/ -f1)"
+            if [ -z "$(find "$top" -type f ! -name .DS_Store)" ]; then rm -rf "$top"; fi
+          fi
+
+      - name: Copy your images
+        run: python3 generator/fetch_images.py . || echo "::warning::Image copying hit a problem; backdrops still build"
+
+      - name: Get the prism-wallpapers script
+        run: |
+          mkdir -p work/scripts
+          base="https://raw.githubusercontent.com/bramst0ne/prism-wallpapers/$PRISM_COMMIT"
+          curl -fsSL "$base/scripts/backdrop_T2_flat.py" -o work/scripts/backdrop_T2_flat.py
+          curl -fsSL "$base/requirements.txt" -o work/requirements.txt
+          python3 -m venv work/.venv
+          work/.venv/bin/pip install --quiet -r work/requirements.txt
+          work/.venv/bin/python generator/make_current.py work/scripts/backdrop_T2_flat.py \
+            || echo "::warning::Couldn't switch to 'current' mode; using the original title picking"
+
+      - name: Build backdrops
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          BINGECAT_MANIFEST_URL: ${{ secrets.BINGECAT_MANIFEST_URL }}
+          AIOMETADATA_MANIFEST_URL: ${{ secrets.AIOMETADATA_MANIFEST_URL }}
+        run: work/.venv/bin/python generator/build.py --work work --site . --only "${{ inputs.only || 'everything' }}"
+
+      - name: Keep the logs (for 7 days)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: work/logs
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Upload to the repo
+        run: |
+          rm -rf work
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          msg="Backdrops updated $(date -u '+%Y-%m-%d %H:%M') UTC"
+          # Keep anything you uploaded or edited while this run was working
+          # Keep anything that changed in the repo while this run was working (uploads, edits,
+          # script updates) - only the backdrops and README come from this run.
+          git fetch --quiet --depth 1 origin main
+          built() { case "$1" in networks/*|companies/*|genres/*|bingecat/*|README.md) return 0;; esac; return 1; }
+          git ls-files -z | while IFS= read -r -d '' f; do               # files deleted mid-run
+            built "$f" || git cat-file -e "FETCH_HEAD:$f" 2>/dev/null || rm -f -- "$f"
+          done
+          git ls-tree --name-only FETCH_HEAD | while IFS= read -r p; do   # files added or changed mid-run
+            case "$p" in networks|companies|genres|bingecat|README.md) ;; *) git checkout --quiet FETCH_HEAD -- "$p" ;; esac
+          done
+          # One fresh commit each day, so old backdrops don't pile up in the repo.
+          git checkout --quiet --orphan fresh
+          git add -A
+          git commit --quiet -m "$msg"
+          if ! git push --force --quiet origin HEAD:main; then
+            echo "::warning::Fresh-commit upload refused, falling back to a normal commit"
+            git fetch --quiet --depth 1 origin main
+            git reset --quiet --soft FETCH_HEAD
+            git commit --quiet -m "$msg" || true
+            git push --quiet origin HEAD:main
+          fi
