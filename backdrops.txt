@@ -1,0 +1,78 @@
+# ─────────────────────────────────────────────────────────────────────
+#  Which backdrops to build every day.
+#  You can edit this file right on github.com (pencil icon) — the next
+#  daily run picks up the change. The README follows this order.
+#
+#  Format:   <type>  <id(s)>  =  <name shown in the README>
+#    network   TMDB network ID(s)   (two IDs = blended into one backdrop)
+#    company   TMDB company ID(s)
+#    genre     a genre name: action, adventure, animation, anime, comedy, crime,
+#              documentary, drama, family, fantasy, horror, reality-tv, romance,
+#              science-fiction, thriller, war, western
+#              or your own:  genre <name> = <Name> | movie: <ids> | tv: <ids>
+#              (add  | match: all  to need every genre, e.g. romance AND comedy)
+#    bingecat  films | tv           (your Bingecat AI lists; add | profile: 7047 for another profile)
+#
+#  IDs: https://github.com/bramst0ne/prism-wallpapers/blob/main/tmdb_reference_ids.txt
+# ─────────────────────────────────────────────────────────────────────
+
+# Streaming services
+network  213       = Netflix
+network  49 8304   = HBO + HBO Max
+network  2739      = Disney+
+network  2552      = Apple TV+
+network  1024      = Prime Video
+network  453       = Hulu
+network  4330      = Paramount+
+network  3353      = Peacock
+network  1112      = Crunchyroll
+
+# Studios
+company  41077     = A24
+company  10342     = Studio Ghibli
+company  33        = Universal Pictures
+company  174       = Warner Bros. Pictures
+company  2         = Walt Disney Pictures
+company  3         = Pixar
+company  4         = Paramount Pictures
+company  127928    = 20th Century Studios
+company  3172      = Blumhouse Productions
+company  6704      = Illumination
+company  521       = DreamWorks Animation
+company  1632      = Lionsgate
+company  21        = Metro-Goldwyn-Mayer
+company  12        = New Line Cinema
+
+# Genres (films + TV; anime = Japanese animation, animation = everything else)
+genre    action           = Action
+genre    adventure        = Adventure
+genre    animation        = Animation
+genre    anime            = Anime
+genre    comedy           = Comedy
+genre    crime            = Crime
+genre    documentary      = Documentary
+genre    drama            = Drama
+genre    family           = Family
+genre    fantasy          = Fantasy
+genre    horror           = Horror
+genre    reality-tv       = Reality TV
+genre    romance          = Romance
+genre    romantic-comedy  = Romantic Comedy | movie: 10749 35 | match: all
+genre    science-fiction  = Science Fiction
+genre    thriller         = Thriller
+genre    war              = War
+genre    western          = Western
+
+# Bingecat — uses every AI list of that type, "Latest" lists in focus.
+# To pick specific lists instead, add their IDs after films/tv, e.g.
+#   bingecat films aicat_cs_25232324 aicat_cs_2300784 = Recommended Films
+bingecat films     = Recommended Films
+bingecat tv        = Recommended TV
+
+# Other people's Bingecat profiles on the same account (| profile: <number>)
+bingecat films aicat_list_41409                   = Recommended Films (profile 2) | profile: 7047
+bingecat tv    aicat_list_41410                   = Recommended TV (profile 2)    | profile: 7047
+bingecat films aicat_list_41390 aicat_list_41386  = Recommended Films (profile 3) | profile: 7048
+bingecat tv    aicat_list_41391 aicat_list_41387  = Recommended TV (profile 3)    | profile: 7048
+bingecat films aicat_list_41419                   = Recommended Films (profile 4) | profile: 7049
+bingecat tv    aicat_list_41420                   = Recommended TV (profile 4)    | profile: 7049
